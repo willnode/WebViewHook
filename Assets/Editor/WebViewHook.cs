@@ -1,4 +1,4 @@
-﻿/* WebHook 0.9 - https://github.com/willnode/WebViewHook/ - MIT */
+﻿/* WebHook 0.5 - https://github.com/willnode/WebViewHook/ - MIT */
 
 using System;
 using System.Linq;
