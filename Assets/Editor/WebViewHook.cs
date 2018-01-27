@@ -54,28 +54,28 @@ public class WebViewHook : ScriptableObject
     public void OnDisable()
     {
         if (webView)
-        Detach();
+            Detach();
     }
 
     public void OnDestroy()
-    { 
+    {
         DestroyImmediate(webView);
         webView = null;
     }
 
     public bool Hook(EditorWindow host)
-    { 
-
-
+    {
         if (host == this.host) return false;
         if (!webView)
             OnEnable();
+
         Invoke(_InitWebView, _Parent.GetValue(hostCache = (this.host = host)), 0, 0, 1, 1, false);
         Invoke(_SetDelegateObject, this);
+
         return true;
     }
 
-    public void Detach ()
+    public void Detach()
     {
         Invoke(_SetHostView, this.hostCache = null);
 
@@ -102,8 +102,9 @@ public class WebViewHook : ScriptableObject
             var h = _Parent.GetValue(host);
             if (hostCache != h)
             {
-                SetHostView(h); 
-            } else
+                SetHostView(h);
+            }
+            else
                 Invoke(_SetHostView, h);
 
         }
@@ -143,7 +144,7 @@ public class WebViewHook : ScriptableObject
 
     public void LoadHTML(string html)
     {
-        Invoke(_LoadURL, "data:text/html," + html);
+        Invoke(_LoadURL, "data:text/html," + html.Replace('\n', ' '));
     }
 
     public void LoadFile(string path)
@@ -159,14 +160,13 @@ public class WebViewHook : ScriptableObject
     private void OnWebViewDirty()
     {
         host.Repaint();
-    } 
+    }
 
     private void OnOpenExternalLink(string url)
     {
         if (!url.StartsWith("http://") && !url.StartsWith("https://"))
-        {
             return;
-        }
+
         Application.OpenURL(url);
     }
 
@@ -176,9 +176,7 @@ public class WebViewHook : ScriptableObject
         {
             m.Invoke(webView, args);
         }
-        catch (Exception)
-        {
-        }
+        catch (Exception) { }
     }
 
     public void OnLoadError(string url)
@@ -187,6 +185,5 @@ public class WebViewHook : ScriptableObject
     }
 
     const BindingFlags Instance = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
-
 
 }

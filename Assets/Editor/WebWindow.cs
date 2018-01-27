@@ -9,7 +9,6 @@ using UnityEngine;
 class WebWindow : EditorWindow
 {
 
-
     WebViewHook webView;
     string url = "https://google.com";
 
@@ -22,8 +21,11 @@ class WebWindow : EditorWindow
 
     void OnEnable()
     {
-        // create webView
-        webView = CreateInstance<WebViewHook>();
+        if (!webView)
+        {
+            // create webView
+            webView = CreateInstance<WebViewHook>();
+        }
     }
 
     public void OnBecameInvisible()
@@ -35,6 +37,11 @@ class WebWindow : EditorWindow
         }
     }
 
+    void OnDestroy()
+    {
+        //Destroy web view
+        DestroyImmediate(webView);
+    }
 
     void OnGUI()
     {
@@ -66,11 +73,5 @@ class WebWindow : EditorWindow
             // keep the browser aware with resize
             webView.OnGUI(webViewRect);
         }
-    }
-
-    void OnDestroy()
-    {
-        //Destroy web view
-        DestroyImmediate(webView);
     }
 }
