@@ -149,7 +149,7 @@ public class WebViewHook : ScriptableObject
 
     public void LoadHTML(string html)
     {
-        Invoke(_LoadURL, "data:text/html;charset=utf-8," + html.Replace('\n', ' '));
+        Invoke(_LoadURL, "data:text/html;charset=utf-8," + html);
     }
 
     public void LoadFile(string path)
