@@ -18,9 +18,13 @@ public class WebEditor : EditorWindow
 
     class Styles
     {
-        public static string template = "<html>\n<head>{3}\n<style>{1}</style>\n<script>{2}</script>\n</head>\n<body>\n{0}\n</body>\n</html>";
+        public static string template = "<html>\n<head>\n{3}\n<style>\n{1}\n</style>\n<script>\n{2}\n</script>\n</head>\n<body>\n{0}\n</body>\n</html>";
         public static GUIContent[] heads = new GUIContent[] { new GUIContent("HTML"), new GUIContent("CSS"), new GUIContent("JS"), new GUIContent("Head") };
         public static GUIStyle[] headStyles = new GUIStyle[] { EditorStyles.miniButtonLeft, EditorStyles.miniButtonMid, EditorStyles.miniButtonMid, EditorStyles.miniButtonRight };
+        public static GUIStyle textArea = new GUIStyle(EditorStyles.textArea) {
+            font = Font.CreateDynamicFontFromOSFont("Courier New", 12),
+            wordWrap = true
+        };
     }
 
     public string this[int idx]
@@ -113,7 +117,7 @@ public class WebEditor : EditorWindow
 
         // html text field
         EditorGUI.BeginChangeCheck();
-        this[panel] = EditorGUI.TextArea(new Rect(0, 30, half, position.height - 40), this[panel]);
+        this[panel] = EditorGUI.TextArea(new Rect(0, 30, half, position.height - 40), this[panel], Styles.textArea);
         if (EditorGUI.EndChangeCheck())
             webView.LoadHTML(Compose());
 

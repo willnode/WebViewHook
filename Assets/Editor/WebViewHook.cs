@@ -1,4 +1,4 @@
-﻿/* WebHook 0.5 - https://github.com/willnode/WebViewHook/ - MIT */
+﻿/* WebHook 0.6 - https://github.com/willnode/WebViewHook/ - MIT */
 
 using System;
 using System.Linq;
@@ -42,22 +42,31 @@ public class WebViewHook : ScriptableObject
         _LoadURL = (_T.GetMethod("LoadURL", Instance));
     }
 
-    public void OnEnable()
+    void OnEnable()
     {
         if (!webView)
         {
             webView = CreateInstance(_T);
             webView.hideFlags = HideFlags.DontSave;
         }
+
+        // This is necessary because WebView messes whole editor if leaves open during assembly reload
+        // Unfortunately this AssemblyReloadEvents only available in 2017.1 so we can't use WebView in 5.x
+        // Will looking for another option if found.
+        AssemblyReloadEvents.beforeAssemblyReload += OnDisable;
     }
 
-    public void OnDisable()
+    void OnDisable()
     {
         if (webView)
+        {
             Detach();
+        }
+
+        AssemblyReloadEvents.beforeAssemblyReload -= OnDisable;
     }
 
-    public void OnDestroy()
+    void OnDestroy()
     {
         DestroyImmediate(webView);
         webView = null;
@@ -96,20 +105,16 @@ public class WebViewHook : ScriptableObject
 
     public void OnGUI(Rect r)
     {
-
         if (host)
         {
             var h = _Parent.GetValue(host);
             if (hostCache != h)
-            {
                 SetHostView(h);
-            }
             else
                 Invoke(_SetHostView, h);
-
         }
-        SetSizeAndPosition(r);
 
+        SetSizeAndPosition(r);
     }
 
     public void Forward()
@@ -144,7 +149,7 @@ public class WebViewHook : ScriptableObject
 
     public void LoadHTML(string html)
     {
-        Invoke(_LoadURL, "data:text/html," + html.Replace('\n', ' '));
+        Invoke(_LoadURL, "data:text/html;charset=utf-8," + html.Replace('\n', ' '));
     }
 
     public void LoadFile(string path)
