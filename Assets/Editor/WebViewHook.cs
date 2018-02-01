@@ -1,4 +1,4 @@
-﻿/* WebHook 0.6 - https://github.com/willnode/WebViewHook/ - MIT */
+﻿/* WebHook 0.7 - https://github.com/willnode/WebViewHook/ - MIT */
 
 using System;
 using System.Linq;
@@ -7,10 +7,9 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-
 public class WebViewHook : ScriptableObject
 {
-
+    
     Object webView;
     EditorWindow host;
     object hostCache;
@@ -21,9 +20,15 @@ public class WebViewHook : ScriptableObject
     static MethodInfo _SetSizeAndPosition;
     static MethodInfo _InitWebView;
     static MethodInfo _SetDelegateObject;
+    static MethodInfo _AllowRightClickMenu;
+    static MethodInfo _ShowDevTools;
+    static MethodInfo _DefineScriptObject;
     static MethodInfo _SetHostView;
     static MethodInfo _ExecuteJavascript;
     static MethodInfo _LoadURL;
+    static MethodInfo _HasApplicationFocus;
+    static MethodInfo _SetApplicationFocus;
+    static Func<Rect, Rect> _Unclip;
 
     static WebViewHook()
     {
@@ -37,9 +42,17 @@ public class WebViewHook : ScriptableObject
         _InitWebView = (_T.GetMethod("InitWebView", Instance));
         _SetSizeAndPosition = (_T.GetMethod("SetSizeAndPosition", Instance));
         _SetHostView = (_T.GetMethod("SetHostView", Instance));
+        _AllowRightClickMenu = (_T.GetMethod("AllowRightClickMenu", Instance));
         _SetDelegateObject = (_T.GetMethod("SetDelegateObject", Instance));
+        _ShowDevTools = (_T.GetMethod("ShowDevTools", Instance));
+        _DefineScriptObject = (_T.GetMethod("DefineScriptObject", Instance));
         _ExecuteJavascript = (_T.GetMethod("ExecuteJavascript", Instance));
         _LoadURL = (_T.GetMethod("LoadURL", Instance));
+        _HasApplicationFocus = (_T.GetMethod("HasApplicationFocus", Instance));
+        _SetApplicationFocus = (_T.GetMethod("SetApplicationFocus", Instance));
+        _Unclip = (Func<Rect, Rect>)Delegate.CreateDelegate(typeof(Func<Rect, Rect>), typeof(GUI).Assembly.GetTypes()
+            .First(x => x.Name == "GUIClip").GetMethod("Unclip", BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(Rect) }, null));
+
     }
 
     void OnEnable()
@@ -75,11 +88,15 @@ public class WebViewHook : ScriptableObject
     public bool Hook(EditorWindow host)
     {
         if (host == this.host) return false;
+
         if (!webView)
             OnEnable();
 
+        // initialization go here
+
         Invoke(_InitWebView, _Parent.GetValue(hostCache = (this.host = host)), 0, 0, 1, 1, false);
         Invoke(_SetDelegateObject, this);
+        Invoke(_AllowRightClickMenu, true);
 
         return true;
     }
@@ -87,8 +104,8 @@ public class WebViewHook : ScriptableObject
     public void Detach()
     {
         Invoke(_SetHostView, this.hostCache = null);
-
     }
+
     void SetHostView(object host)
     {
         Invoke(_SetHostView, this.hostCache = host);
@@ -114,7 +131,12 @@ public class WebViewHook : ScriptableObject
                 Invoke(_SetHostView, h);
         }
 
-        SetSizeAndPosition(r);
+        SetSizeAndPosition(_Unclip(r));
+    }
+
+    public void AllowRightClickMenu(bool yes)
+    {
+        Invoke(_AllowRightClickMenu, yes);
     }
 
     public void Forward()
@@ -142,6 +164,22 @@ public class WebViewHook : ScriptableObject
         Invoke(_Reload);
     }
 
+    public bool HasApplicationFocus()
+    {
+        return (bool)_HasApplicationFocus.Invoke(webView, null);
+    }
+
+    public void SetApplicationFocus(bool focus)
+    {
+        Invoke(_SetApplicationFocus, focus);
+    }
+
+    protected void ShowDevTools()
+    {
+        // This method may not work
+        Invoke(_ShowDevTools);
+    }
+
     public void LoadURL(string url)
     {
         Invoke(_LoadURL, url);
@@ -157,22 +195,21 @@ public class WebViewHook : ScriptableObject
         Invoke(_LoadURL, "file:///" + path);
     }
 
+    protected void DefineScriptObject(string path, ScriptableObject obj)
+    {
+        // This method has unknown behavior
+        Invoke(_DefineScriptObject, path, obj);
+    }
+
+    protected void SetDelegateObject(ScriptableObject obj)
+    {
+        // Only set into this object
+        Invoke(_SetDelegateObject, obj);
+    }
+
     public void ExecuteJavascript(string js)
     {
         Invoke(_ExecuteJavascript, js);
-    }
-
-    private void OnWebViewDirty()
-    {
-        host.Repaint();
-    }
-
-    private void OnOpenExternalLink(string url)
-    {
-        if (!url.StartsWith("http://") && !url.StartsWith("https://"))
-            return;
-
-        Application.OpenURL(url);
     }
 
     void Invoke(MethodInfo m, params object[] args)
@@ -184,11 +221,64 @@ public class WebViewHook : ScriptableObject
         catch (Exception) { }
     }
 
-    public void OnLoadError(string url)
+    const BindingFlags Instance = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+
+    /* Default bindings for SetDelegateObject */
+
+    public Action<string> LoadError;
+
+    public Action InitScripting;
+
+    public Action<string> LocationChanged;
+
+    protected virtual void OnLocationChanged(string url)
     {
-        Debug.LogError(url);
+        if (LocationChanged != null)
+            LocationChanged(url);
     }
 
-    const BindingFlags Instance = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+    protected virtual void OnLoadError(string url)
+    {
+        if (LoadError != null)
+            LoadError(url);
+        else
+            Debug.LogError("WebView has failed to load " + url);
+    }
+
+    protected virtual void OnInitScripting()
+    {
+        if (InitScripting != null)
+            InitScripting();
+    }
+
+    protected virtual void OnOpenExternalLink(string url)
+    {
+        // This binding may not work
+    }
+
+    protected virtual void OnWebViewDirty()
+    {
+        // This binding may not work
+    }
+
+    protected virtual void OnDownloadProgress(string id, string message, ulong bytes, ulong total)
+    {
+        // This binding may not work
+    }
+
+    protected virtual void OnBatchMode()
+    {
+        // This binding may not work
+    }
+
+    protected virtual void OnReceiveTitle(string title)
+    {
+        // This binding may not work
+    }
+
+    protected virtual void OnDomainReload()
+    {
+        // This binding may not work
+    }
 
 }

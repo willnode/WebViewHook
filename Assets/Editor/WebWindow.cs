@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+﻿
 using UnityEditor;
 using UnityEngine;
 
@@ -50,8 +46,6 @@ class WebWindow : EditorWindow
             // do the first thing to do
             webView.LoadURL(url);
 
-        Rect webViewRect = new Rect(0, 40, position.width, position.height - 20);
-
         // Navigation
         if (GUI.Button(new Rect(0, 0, 25, 20), "←"))
             webView.Back();
@@ -61,17 +55,24 @@ class WebWindow : EditorWindow
         // URL text field
         GUI.SetNextControlName("urlfield");
         url = GUI.TextField(new Rect(50, 0, position.width - 50, 20), url);
+        var ev = Event.current;
 
         // Focus on web view if return is pressed in URL field
-        if (Event.current.isKey && Event.current.keyCode == KeyCode.Return && GUI.GetNameOfFocusedControl().Equals("urlfield"))
-        {
-            webView.LoadURL(url);
-        }
+        if (ev.isKey && GUI.GetNameOfFocusedControl().Equals("urlfield"))
+            if (ev.keyCode == KeyCode.Return)
+            {
+                webView.LoadURL(url);
+                GUIUtility.keyboardControl = 0;
+                webView.SetApplicationFocus(true);
+                ev.Use();
+            }
+        //  else if (ev.keyCode == KeyCode.A && (ev.control | ev.command))
 
-        if (Event.current.type == EventType.Repaint)
+
+        if (ev.type == EventType.Repaint)
         {
             // keep the browser aware with resize
-            webView.OnGUI(webViewRect);
+            webView.OnGUI(new Rect(0, 20, position.width, position.height - 20));
         }
     }
 }

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,7 +9,7 @@ public class WebEditor : EditorWindow
 
     string head = @"<!-- Use this to make custom html placed on head -->";
     string html = @"<h1>Hello World</h1>";
-    string css = "body {\n\tbackground-color: white;\n}";
+    string css = "body {\n  background-color: white;\n}";
     string js = "/* Javascript Goes Here */";
     int panel = 0;
 
@@ -53,7 +50,7 @@ public class WebEditor : EditorWindow
     }
 
     [MenuItem("Tools/Web Editor %#e")]
-    static void Load()
+    static public void Load()
     {
         WebEditor window = GetWindow<WebEditor>();
         window.Show();
@@ -109,7 +106,7 @@ public class WebEditor : EditorWindow
         }
 
         if (GUI.Button(new Rect(half - 45, 0, 45, 30), "Copy"))
-            GUIUtility.systemCopyBuffer = Compose();
+            GUIUtility.systemCopyBuffer = Compose().Replace("\n", Environment.NewLine);
 
         if (EditorGUI.EndChangeCheck())
             // need this so text field can be updated
@@ -117,14 +114,14 @@ public class WebEditor : EditorWindow
 
         // html text field
         EditorGUI.BeginChangeCheck();
-        this[panel] = EditorGUI.TextArea(new Rect(0, 30, half, position.height - 40), this[panel], Styles.textArea);
+        this[panel] = EditorGUI.TextArea(new Rect(0, 30, half, position.height - 30), this[panel], Styles.textArea);
         if (EditorGUI.EndChangeCheck())
             webView.LoadHTML(Compose());
 
         if (Event.current.type == EventType.Repaint)
         {
             // keep the browser aware with resize
-            webView.OnGUI(new Rect(half, 20, half, position.height - (0)));
+            webView.OnGUI(new Rect(half, 0, half, position.height));
         }
     }
 }
