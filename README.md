@@ -68,7 +68,9 @@ To get web socket server running you need to download [WebSocket-Sharp](https://
 
 See [WebData](Assets/Editor/WebData.cs) for minimal working example of using `WebSocketHook` to hook C# into javascript variable.
 
-## Caveat
+## More Information and Caveats
+
+**This is an editor only solution.** If you're looking to add WebView to a game build then this is not the repo you're looking for.
 
 `WebView` is hidden for a good reason. The editor might **crash** if done improperly so follow the examples and don't experiment with project unsaved.
 
