@@ -9,7 +9,6 @@ using Object = UnityEngine.Object;
 
 public class WebViewHook : ScriptableObject
 {
-    
     Object webView;
     EditorWindow host;
     object hostCache;
@@ -55,6 +54,11 @@ public class WebViewHook : ScriptableObject
 
     }
 
+    ~WebViewHook()
+    {
+        OnDisable();
+    }
+
     void OnEnable()
     {
         if (!webView)
@@ -66,7 +70,7 @@ public class WebViewHook : ScriptableObject
         // This is necessary because WebView messes whole editor if leaves open during assembly reload
         // Unfortunately this AssemblyReloadEvents only available in 2017.1 so we can't use WebView in 5.x
         // Will looking for another option if found.
-        AssemblyReloadEvents.beforeAssemblyReload += OnDisable;
+        // AssemblyReloadEvents.beforeAssemblyReload += OnDisable;
     }
 
     void OnDisable()
@@ -76,7 +80,7 @@ public class WebViewHook : ScriptableObject
             Detach();
         }
 
-        AssemblyReloadEvents.beforeAssemblyReload -= OnDisable;
+        // AssemblyReloadEvents.beforeAssemblyReload -= OnDisable;
     }
 
     void OnDestroy()
