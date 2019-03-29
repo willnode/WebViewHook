@@ -72,12 +72,8 @@ See [WebData](Assets/Editor/WebData.cs) for minimal working example of using `We
 
 **This is an editor only solution.** If you're looking to add WebView to a game build then this is not the repo you're looking for.
 
-`WebView` is hidden for a good reason. The editor might **crash** if done improperly so follow the examples and don't experiment with project unsaved.
-
 The technology behind `WebView` is [Chrome Embedded Framework](https://en.wikipedia.org/wiki/Chromium_Embedded_Framework), [version 37](https://twitter.com/willnode/status/955079655630913541). In Windows it's contained inside the gigantic `libcef.dll`.
 
-`WebView` in Unity is just like Chrome, with background-color default to darkgrey and no plugins allowed (hence you can't open Flash/Java/PDF inside it).
+`WebView` in Unity is just like Chrome, with background-color default to darkgrey and no plugins (Flash/Java/PDF) allowed.
 
 I solving bugs as I can, but of course limited. If you can't open a specific website, mostly comes down to the fact that Unity haven't upgrade their CEF browser.
-
-For safety reason, the WebViewHook uses `AssemblyReloadEvents` which only available in Unity version 2017.1 or higher.

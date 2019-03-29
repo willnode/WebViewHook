@@ -66,11 +66,6 @@ public class WebViewHook : ScriptableObject
             webView = CreateInstance(_T);
             webView.hideFlags = HideFlags.DontSave;
         }
-
-        // This is necessary because WebView messes whole editor if leaves open during assembly reload
-        // Unfortunately this AssemblyReloadEvents only available in 2017.1 so we can't use WebView in 5.x
-        // Will looking for another option if found.
-        // AssemblyReloadEvents.beforeAssemblyReload += OnDisable;
     }
 
     void OnDisable()
@@ -79,8 +74,6 @@ public class WebViewHook : ScriptableObject
         {
             Detach();
         }
-
-        // AssemblyReloadEvents.beforeAssemblyReload -= OnDisable;
     }
 
     void OnDestroy()
