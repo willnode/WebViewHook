@@ -65,6 +65,7 @@ public class WebViewHook : ScriptableObject
         {
             webView = CreateInstance(_T);
             webView.hideFlags = HideFlags.DontSave;
+            this.hideFlags = HideFlags.DontSave;
         }
     }
 
