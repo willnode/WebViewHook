@@ -1,5 +1,7 @@
 # WebViewHook
 
+> Warning: WebViewHook is obsolete for Unity 2020 and Above due to removal of Asset Store Browsing in Unity Editor. This project is soon to be archived.
+
 This is a code snippet to access a hidden `WebView` API from Unity Editor, and load it to `EditorWindow`.
 
 ![Screenshot](Screenshots/Demo.png)
